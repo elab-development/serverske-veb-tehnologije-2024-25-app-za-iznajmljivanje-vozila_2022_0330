@@ -48,4 +48,9 @@ class Vehicle extends Model
         return $this->status === 'available';
     }
 
+    public function isRented(): bool
+    {
+        return $this->status === 'rented';
+    }
+
 }
