@@ -10,6 +10,10 @@ use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 use Illuminate\Support\Facades\Validator;
 
+#za pass reset
+use Illuminate\Support\Facades\Password;
+use Illuminate\Auth\Events\PasswordReset;
+use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
@@ -98,6 +102,66 @@ class AuthController extends Controller
         return response()->json([
             'user' => $request->user()
         ]);
+    }
+
+
+    #resetovanje sifre
+
+    #1. slanje emaila za reset
+    public function sendResetLink(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email|exists:users,email',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Greška pri validaciji',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $status = Password::sendResetLink(
+            $request->only('email')
+        );
+
+        return $status === Password::RESET_LINK_SENT
+            ? response()->json(['message' => 'Link za reset lozinke je poslat na email'])
+            : response()->json(['message' => 'Došlo je do greške'], 500);
+    }
+
+    #2. resetovanje sifre
+     public function resetPassword(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'token' => 'required',
+            'email' => 'required|email',
+            'password' => 'required|min:8|confirmed',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Greška pri validaciji',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $status = Password::reset(
+            $request->only('email', 'password', 'password_confirmation', 'token'),
+            function ($user, $password) {
+                $user->forceFill([
+                    'password' => Hash::make($password) #nova sifra se hesira
+                ])->setRememberToken(Str::random(60));
+
+                $user->save(); #cuvamo sve promene u bazi
+
+                event(new PasswordReset($user));
+            }
+        );
+
+        return $status === Password::PASSWORD_RESET
+            ? response()->json(['message' => 'Lozinka je uspešno resetovana'])
+            : response()->json(['message' => 'Došlo je do greške pri resetovanju lozinke'], 500);
     }
 
 }
