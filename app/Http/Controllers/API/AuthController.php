@@ -110,58 +110,52 @@ class AuthController extends Controller
     #1. slanje emaila za reset
     public function sendResetLink(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'email' => 'required|email|exists:users,email',
+     $validator = Validator::make($request->all(), [
+        'email' => 'required|email|exists:users,email',
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'message' => 'Greška pri validaciji',
-                'errors' => $validator->errors()
-            ], 422);
+        return response()->json([
+            'message' => 'Greška pri validaciji',
+            'errors' => $validator->errors()
+        ], 422);
         }
 
-        $status = Password::sendResetLink(
-            $request->only('email')
-        );
+     $user = User::where('email', $request->email)->first();
+     $token = Password::broker()->createToken($user);
+     $resetUrl = url('/reset-password?token=' . $token . '&email=' . urlencode($user->email));
 
-        return $status === Password::RESET_LINK_SENT
-            ? response()->json(['message' => 'Link za reset lozinke je poslat na email'])
-            : response()->json(['message' => 'Došlo je do greške'], 500);
+    return response()->json([
+        'message' => 'Reset link generisan',
+        'reset_url' => $resetUrl,
+        'token' => $token,
+        
+    ]);
     }
-
-    #2. resetovanje sifre
-     public function resetPassword(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'token' => 'required',
-            'email' => 'required|email',
-            'password' => 'required|min:8|confirmed',
+    #2. reset sifre 
+    public function resetPassword(Request $request) 
+    {   
+        $request->validate([
+        'email' => 'required|email|exists:users,email',
+        'password' => 'required|min:8|confirmed',
+        'token' => 'required',
         ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'message' => 'Greška pri validaciji',
-                'errors' => $validator->errors()
-            ], 422);
-        }
 
         $status = Password::reset(
-            $request->only('email', 'password', 'password_confirmation', 'token'),
-            function ($user, $password) {
-                $user->forceFill([
-                    'password' => Hash::make($password) #nova sifra se hesira
-                ])->setRememberToken(Str::random(60));
+        $request->only('email', 'password', 'password_confirmation', 'token'),
+        function ($user, $password) {
+            $user->forceFill([
+                'password' => Hash::make($password)
+            ])->setRememberToken(Str::random(60));
 
-                $user->save(); #cuvamo sve promene u bazi
+            $user->save();
+            event(new PasswordReset($user));
+        }
+    );
 
-                event(new PasswordReset($user));
-            }
-        );
-
-        return $status === Password::PASSWORD_RESET
-            ? response()->json(['message' => 'Lozinka je uspešno resetovana'])
-            : response()->json(['message' => 'Došlo je do greške pri resetovanju lozinke'], 500);
-    }
+    return $status === Password::PASSWORD_RESET
+        ? response()->json(['message' => 'Lozinka je uspešno resetovana'])
+        : response()->json(['message' => 'Došlo je do greške pri resetovanju lozinke'], 500);
+}
 
 }
