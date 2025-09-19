@@ -5,6 +5,12 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\API\AuthController;
 
+use App\Http\Controllers\API\VehicleController;
+
+# Vehicle rute- javne
+Route::get('/vehicles', [VehicleController::class, 'index']);   // Prikaz svih vozila
+Route::get('/vehicles/{vehicle}', [VehicleController::class, 'show']); // Prikaz jednog vozila
+
 #javne rute
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
