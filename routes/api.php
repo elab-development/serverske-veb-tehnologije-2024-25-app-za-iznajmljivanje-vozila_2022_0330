@@ -10,7 +10,8 @@ use App\Http\Controllers\API\RentalController;
 
 # Vehicle rute- javne
 Route::get('/vehicles', [VehicleController::class, 'index']);   // Prikaz svih vozila
-Route::get('/vehicles/{vehicle}', [VehicleController::class, 'show']); // Prikaz jednog vozila
+Route::get('/vehicles/{vehicle}', [VehicleController::class, 'show'])
+    ->name('vehicles.show'); ; // Prikaz jednog vozila
 
 #vehicle rute- zasticene
 Route::middleware(['auth:sanctum', 'can:admin'])->group(function () {

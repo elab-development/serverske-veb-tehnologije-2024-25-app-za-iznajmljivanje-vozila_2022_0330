@@ -11,16 +11,33 @@ class VehicleController extends Controller{
 
     #Prikaz liste svih vozila
 
-    public function index()
+    public function index(Request $request)
     {
-        $vehicles = Vehicle::all();
+        $query = Vehicle::query();
 
-        return response()->json([
-            'message' => 'Lista vozila',
-            'data' => $vehicles
-        ], 200);
+        // Filtriranje
+        if ($request->filled('brand')) {
+            $query->where('brand', $request->query('brand'));
+        }
+        if ($request->filled('model')) {
+            $query->where('model', $request->query('model'));
+        }
+        if ($request->filled('year')) {
+            $query->where('year', $request->query('year'));
+        }
+        if ($request->filled('color')) {
+            $query->where('color', $request->query('color'));
+        }
+        if ($request->filled('fuel_type')) {
+            $query->where('fuel_type', $request->query('fuel_type'));
+        }
+
+        // Paginacija
+        $perPage = $request->query('per_page', 5); // 5 po stranici
+        $vehicles = $query->paginate($perPage);
+
+        return response()->json($vehicles);
     }
-
    
     #Prikaz detalja jednog vozila
 
