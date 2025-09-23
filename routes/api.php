@@ -6,15 +6,27 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\AuthController;
 
 use App\Http\Controllers\API\VehicleController;
+use App\Http\Controllers\API\RentalController;
 
 # Vehicle rute- javne
 Route::get('/vehicles', [VehicleController::class, 'index']);   // Prikaz svih vozila
 Route::get('/vehicles/{vehicle}', [VehicleController::class, 'show']); // Prikaz jednog vozila
+
 #vehicle rute- zasticene
 Route::middleware(['auth:sanctum', 'can:admin'])->group(function () {
-    Route::post('/vehicles', [VehicleController::class, 'store']);       // Kreiranje vozila
-    Route::put('/vehicles/{vehicle}', [VehicleController::class, 'update']);  // Ažuriranje vozila
-    Route::delete('/vehicles/{vehicle}', [VehicleController::class, 'destroy']); // Brisanje vozila
+    Route::apiResource('vehicles', VehicleController::class)
+        ->except(['index', 'show']); // bez javnih ruta
+});
+
+#rental rute - javne
+Route::get('/rentals', [RentalController::class, 'index']);
+Route::get('/rentals/{id}', [RentalController::class, 'show']);
+
+#rental rute- zasticene
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/rentals', [RentalController::class, 'store']);
+    Route::put('/rentals/{id}', [RentalController::class, 'update']);
+    Route::delete('/rentals/{id}', [RentalController::class, 'destroy']);
 });
 
 #javne rute
