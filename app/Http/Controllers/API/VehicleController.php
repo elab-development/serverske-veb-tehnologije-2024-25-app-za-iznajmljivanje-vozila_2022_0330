@@ -31,6 +31,12 @@ class VehicleController extends Controller{
         if ($request->filled('fuel_type')) {
             $query->where('fuel_type', $request->query('fuel_type'));
         }
+         if ($request->filled('min_price')) {
+        $query->where('daily_price', '>=', $request->query('min_price'));
+        }
+        if ($request->filled('max_price')) {
+            $query->where('daily_price', '<=', $request->query('max_price'));
+        }
 
         // Paginacija
         $perPage = $request->query('per_page', 5); // 5 po stranici
