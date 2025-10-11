@@ -25,7 +25,13 @@ class RentalController extends Controller
             return response()->json(['message' => 'Rentiranje nije pronađeno'], 404);
         }
 
-        return response()->json($rental, 200);
+        $priceInEUR = $rental->getTotalPriceInEUR();
+
+
+        return response()->json([
+        'renta' => $rental,
+        'cena_u_evrima' => $priceInEUR
+        ], 200);
     }
 
     // Kreiranje rentiranja
@@ -87,4 +93,5 @@ class RentalController extends Controller
 
         return response()->json(['message' => 'Rentiranje obrisano'], 200);
     }
+
 }
