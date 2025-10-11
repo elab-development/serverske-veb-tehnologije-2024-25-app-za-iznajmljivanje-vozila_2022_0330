@@ -19,12 +19,11 @@ Route::middleware(['auth:sanctum', 'can:admin'])->group(function () {
         ->except(['index', 'show']); // bez javnih ruta
 });
 
-#rental rute - javne
-Route::get('/rentals', [RentalController::class, 'index']);
-Route::get('/rentals/{id}', [RentalController::class, 'show']);
 
 #rental rute- zasticene
 Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/rentals', [RentalController::class, 'index']);
+    Route::get('/rentals/{id}', [RentalController::class, 'show']);
     Route::post('/rentals', [RentalController::class, 'store']);
     Route::put('/rentals/{id}', [RentalController::class, 'update']);
     Route::delete('/rentals/{id}', [RentalController::class, 'destroy']);
@@ -46,4 +45,8 @@ Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
+});
+
+Route::fallback(function () {
+    return response()->json(['message' => 'Stranica nije pronadjena.'], 404);
 });

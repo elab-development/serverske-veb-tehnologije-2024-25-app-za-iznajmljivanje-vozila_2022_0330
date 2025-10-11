@@ -47,7 +47,7 @@ class RentalController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json($validator->errors(), 422);
+            return response()->json(['message' => 'Greška pri validaciji',$validator->errors()], 422);
         }
 
         $rental = Rental::create($validator->validated());
