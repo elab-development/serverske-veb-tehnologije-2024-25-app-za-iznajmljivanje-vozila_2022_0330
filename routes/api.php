@@ -7,6 +7,7 @@ use App\Http\Controllers\API\AuthController;
 
 use App\Http\Controllers\API\VehicleController;
 use App\Http\Controllers\API\RentalController;
+use App\Http\Controllers\API\PaymentController;
 
 # Vehicle rute- javne
 Route::get('/vehicles', [VehicleController::class, 'index']);   // Prikaz svih vozila
@@ -49,4 +50,10 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::fallback(function () {
     return response()->json(['message' => 'Stranica nije pronadjena.'], 404);
+});
+
+#rute za payments
+Route::middleware(['auth:sanctum', 'can:admin'])->group(function () {
+    Route::get('/payments', [PaymentController::class, 'index']);
+    Route::post('/payments/{rentalId}', [PaymentController::class, 'store']);
 });

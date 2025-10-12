@@ -91,4 +91,9 @@ class Rental extends Model
         return ['error' => 'Greška: ' . $e->getMessage()];
     }
     }
+
+    public function payment()
+    {
+        return $this->hasOne(Payment::class);
+    }
 }
