@@ -15,6 +15,17 @@ class VehicleController extends Controller{
     {
         $query = Vehicle::query();
 
+        // PRETRAGA PO TEKSTU
+        if ($request->filled('search')) {
+            $searchTerm = $request->query('search');
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('brand', 'LIKE', "%{$searchTerm}%")
+                  ->orWhere('model', 'LIKE', "%{$searchTerm}%")
+                  ->orWhere('registration_number', 'LIKE', "%{$searchTerm}%")
+                  ->orWhere('color', 'LIKE', "%{$searchTerm}%");
+            });
+        }
+
         // Filtriranje
         if ($request->filled('brand')) {
             $query->where('brand', $request->query('brand'));
@@ -36,6 +47,20 @@ class VehicleController extends Controller{
         }
         if ($request->filled('max_price')) {
             $query->where('daily_price', '<=', $request->query('max_price'));
+        }
+
+        // SORTIRANJE
+        $sortField = $request->query('sort_by', 'id'); // default sort po id
+        $sortDirection = $request->query('sort_order', 'asc'); // default asc
+        
+        // Lista dozvoljenih polja za sortiranje
+        $allowedSortFields = [
+             'brand', 'model', 'year', 'daily_price', 
+            'mileage', 'seats'
+        ];
+        
+        if (in_array($sortField, $allowedSortFields)) {
+            $query->orderBy($sortField, $sortDirection);
         }
 
         // Paginacija
