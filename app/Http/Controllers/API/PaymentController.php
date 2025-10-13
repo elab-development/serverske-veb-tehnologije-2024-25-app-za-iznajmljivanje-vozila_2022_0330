@@ -18,6 +18,14 @@ class PaymentController extends Controller
         try {
             $rental = Rental::findOrFail($rentalId);
 
+            if ($rental->isPlacena()) {
+                return response()->json(['message' => 'Rezervacija je već plaćena'], 400);
+            }
+
+            if ($rental->isOtkazana()) {
+                return response()->json(['message' => 'Otkazana rezervacija se ne može platiti'], 400);
+            }
+
             //racunanje iznosa rente
             $days = $rental->start_date->diffInDays($rental->end_date) + 1;
             $amount = $days * $rental->vehicle->daily_price;

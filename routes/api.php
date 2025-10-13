@@ -28,6 +28,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/rentals', [RentalController::class, 'store']);
     Route::put('/rentals/{id}', [RentalController::class, 'update']);
     Route::delete('/rentals/{id}', [RentalController::class, 'destroy']);
+
+    Route::get('/my-rentals', [RentalController::class, 'myRentals']);
+    Route::put('/my-rentals/{id}', [RentalController::class, 'updateMyRental']);
+    Route::put('/rentals/{id}/cancel', [RentalController::class, 'cancel']);
 });
 
 #javne rute
