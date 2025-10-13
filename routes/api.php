@@ -8,6 +8,7 @@ use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\VehicleController;
 use App\Http\Controllers\API\RentalController;
 use App\Http\Controllers\API\PaymentController;
+use App\Http\Controllers\Admin\StatisticsController;
 
 # Vehicle rute- javne
 Route::get('/vehicles', [VehicleController::class, 'index']);   // Prikaz svih vozila
@@ -60,4 +61,11 @@ Route::fallback(function () {
 Route::middleware(['auth:sanctum', 'can:admin'])->group(function () {
     Route::get('/payments', [PaymentController::class, 'index']);
     Route::post('/payments/{rentalId}', [PaymentController::class, 'store']);
+});
+
+
+#statistika za admine
+Route::middleware(['auth:sanctum', 'can:admin'])->prefix('admin')->group(function () {
+    Route::get('/statistics/vehicles', [StatisticsController::class, 'vehicleStatistics']);
+    Route::get('/statistics/vehicles/{vehicle}/rentals', [StatisticsController::class, 'vehicleRentalDetails']);
 });

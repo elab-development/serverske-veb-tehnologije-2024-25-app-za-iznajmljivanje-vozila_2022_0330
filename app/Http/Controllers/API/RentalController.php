@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Rental;
 use Illuminate\Support\Facades\Validator;
+use App\Models\Vehicle;
 
 class RentalController extends Controller
 {
@@ -47,6 +48,9 @@ class RentalController extends Controller
         if ($validator->fails()) {
             return response()->json(['message' => 'Greška pri validaciji',$validator->errors()], 422);
         }
+
+        $data = $validator->validated();
+        $vehicle = Vehicle::findOrFail($data['vehicle_id']);
 
         //racunanje cene rente
         $days = (new \Carbon\Carbon($data['start_date']))->diffInDays(new \Carbon\Carbon($data['end_date'])) + 1;
