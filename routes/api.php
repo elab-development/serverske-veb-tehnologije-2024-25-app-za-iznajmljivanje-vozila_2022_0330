@@ -9,6 +9,7 @@ use App\Http\Controllers\API\VehicleController;
 use App\Http\Controllers\API\RentalController;
 use App\Http\Controllers\API\PaymentController;
 use App\Http\Controllers\Admin\StatisticsController;
+use App\Http\Controllers\API\CurrencyController;
 
 # Vehicle rute- javne
 Route::get('/vehicles', [VehicleController::class, 'index']);   // Prikaz svih vozila
@@ -69,3 +70,6 @@ Route::middleware(['auth:sanctum', 'can:admin'])->prefix('admin')->group(functio
     Route::get('/statistics/vehicles', [StatisticsController::class, 'vehicleStatistics']);
     Route::get('/statistics/vehicles/{vehicle}/rentals', [StatisticsController::class, 'vehicleRentalDetails']);
 });
+
+#ruta za prebacivanje valute (javni veb servis)
+Route::get('/convert/{amount}/{from}/{to}', [CurrencyController::class, 'convert']);
