@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Vehicle;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Http;
 
 class VehicleController extends Controller{
 
@@ -74,7 +75,7 @@ class VehicleController extends Controller{
 
     public function show($id)
     {
-        $vehicle = Vehicle::find($id);
+       $vehicle = Vehicle::find($id);
 
         if (!$vehicle) {
             return response()->json([
@@ -82,9 +83,20 @@ class VehicleController extends Controller{
             ], 404);
         }
 
+        //poziv javnog veb servisa za dobijanje podataka o odredjenom brendu i modelu
+        $key = env('API_NINJAS_KEY');
+
+        $specs = Http::withHeaders([
+            'X-Api-Key' => $key
+        ])->get('https://api.api-ninjas.com/v1/cars', [
+            'make' => $vehicle->brand, 
+            'model' => $vehicle->model
+        ])->json();
+
         return response()->json([
             'message' => 'Detalji o vozilu',
-            'data' => $vehicle
+            'data'    => $vehicle,
+            'specifications'   => $specs
         ], 200);
     }
 

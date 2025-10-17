@@ -39,35 +39,66 @@ class RentalController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'user_id'    => 'required|exists:users,id',
-            'vehicle_id' => 'required|exists:vehicle,id',
-            'start_date' => 'required|date|after_or_equal:today',
-            'end_date'   => 'required|date|after_or_equal:start_date',
+        'user_id'    => 'required|exists:users,id',
+        'vehicle_id' => 'required|exists:vehicle,id',
+        'start_date' => 'required|date|after_or_equal:today',
+        'end_date'   => 'required|date|after_or_equal:start_date',
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['message' => 'Greška pri validaciji',$validator->errors()], 422);
+            return response()->json([
+                'message' => 'Greška pri validaciji',
+                'errors' => $validator->errors()
+            ], 422);
         }
 
         $data = $validator->validated();
-        $vehicle = Vehicle::findOrFail($data['vehicle_id']);
 
-        //racunanje cene rente
-        $days = (new \Carbon\Carbon($data['start_date']))->diffInDays(new \Carbon\Carbon($data['end_date'])) + 1;
-        $totalPrice = $days * $vehicle->daily_price;
+        // pocetak transakcije
+        \DB::beginTransaction();
 
-        $rental = Rental::create([
-            'user_id' => $data['user_id'],
-            'vehicle_id' => $data['vehicle_id'],
-            'start_date' => $data['start_date'],
-            'end_date' => $data['end_date'],
-            'total_price' => $totalPrice,
-            'status' => 'na_cekanju'
-        ]);
+        try {
+            $vehicle = Vehicle::lockForUpdate()->findOrFail($data['vehicle_id']); 
+            // lockForUpdate sprečava da neko drugi istovremeno rezerviše isto vozilo
 
-        return response()->json([
-            'message' => 'Rezervacija uspešno kreirana',
-            'rental'=>$rental], 201);
+            if ($vehicle->status !== 'available') {
+                throw new \Exception('Vozilo nije dostupno za iznajmljivanje.');
+            }
+
+            $days = (new \Carbon\Carbon($data['start_date']))
+                ->diffInDays(new \Carbon\Carbon($data['end_date'])) + 1;
+            $totalPrice = $days * $vehicle->daily_price;
+
+            // Kreiranje rentiranja
+            $rental = Rental::create([
+                'user_id'     => $data['user_id'],
+                'vehicle_id'  => $data['vehicle_id'],
+                'start_date'  => $data['start_date'],
+                'end_date'    => $data['end_date'],
+                'total_price' => $totalPrice,
+                'status'      => 'na_cekanju'
+            ]);
+
+            // Ažuriranje statusa vozila
+            $vehicle->update(['status' => 'rented']);
+
+            // potvrdjivanje transakcije
+            \DB::commit();
+
+            return response()->json([
+                'message' => 'Rezervacija uspešno kreirana i vozilo označeno kao zauzeto.',
+                'rental' => $rental
+            ], 201);
+        } catch (\Exception $e) {
+
+            //ponistavnanje transakcije
+            \DB::rollBack();
+
+            return response()->json([
+                'message' => 'Došlo je do greške prilikom kreiranja rezervacije.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     // Ažuriranje
@@ -189,6 +220,26 @@ class RentalController extends Controller
         return response()->json([
             'message' => 'Rezervacija uspešno ažurirana',
             'data' => $rental
+        ], 200);
+    }
+
+    //sve rezervacije za jedno vozilo
+    public function rentalsByVehicle($vehicle_id)
+    {
+        $vehicle = Vehicle::find($vehicle_id);
+
+        if (!$vehicle) {
+            return response()->json(['message' => 'Vozilo nije pronađeno'], 404);
+        }
+
+        $rentals = Rental::with('user')
+                        ->where('vehicle_id', $vehicle_id)
+                        ->orderBy('start_date', 'desc')
+                        ->get();
+
+        return response()->json([
+            'vehicle' => $vehicle,
+            'rentals' => $rentals
         ], 200);
     }
 

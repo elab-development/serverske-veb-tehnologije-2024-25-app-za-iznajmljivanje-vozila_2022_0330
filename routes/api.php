@@ -34,6 +34,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/my-rentals', [RentalController::class, 'myRentals']);
     Route::put('/my-rentals/{id}', [RentalController::class, 'updateMyRental']);
     Route::put('/rentals/{id}/cancel', [RentalController::class, 'cancel']);
+
+    Route::get('/vehicles/{id}/rentals', [RentalController::class, 'rentalsByVehicle']);
 });
 
 #javne rute
