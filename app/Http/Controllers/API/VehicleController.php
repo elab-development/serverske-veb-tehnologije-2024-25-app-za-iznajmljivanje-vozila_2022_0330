@@ -28,6 +28,9 @@ class VehicleController extends Controller{
         }
 
         // Filtriranje
+        if ($request->filled('status')) {
+            $query->where('status', $request->query('status'));
+        }
         if ($request->filled('brand')) {
             $query->where('brand', $request->query('brand'));
         }

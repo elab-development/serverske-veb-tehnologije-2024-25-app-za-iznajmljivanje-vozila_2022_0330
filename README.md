@@ -21,17 +21,24 @@ Laravel is a web application framework with expressive, elegant syntax. We belie
 
 Laravel is accessible, powerful, and provides tools required for large, robust applications.
 
-## Learning Laravel
+## Opis funkcionalnosti
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+Ovaj projekat predstavlja RESTful API sistem za iznajmljivanje vozila, razvijen u okviru Laravel okvira.  
+Aplikacija omogućava registraciju korisnika, pregled dostupnih vozila, kreiranje rezervacija, plaćanje, kao i administratorsko upravljanje vozilima i prikaz statistike.
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 2000 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## Pokretanje 
 
-## Laravel Sponsors
+Prvo se pomoću *git init* kreira prazan repozitorijum u koji se klonira projekat pomoću *git clone https://github.com/elab-development/serverske-veb-tehnologije-2024-25-app-za-iznajmljivanje-vozila_2022_0330.git* klonira na lokalni računar.
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+Zatim:
+*composer install*
+*cp .env.example .env* 
+*php artisan key:generate*
+*php artisan migrate*
+
+Aplikacija se pokreće komandom:
+*php artisan serve*
 
 ### Premium Partners
 
